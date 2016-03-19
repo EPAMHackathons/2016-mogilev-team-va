@@ -30,7 +30,7 @@
         }
     }
     
-    function fire(){
+    function fire(e){
 	    var data = {
 	        type: 'fire',
 	        data: {
@@ -102,8 +102,10 @@
 	});
     
     window.onload = function(){
-    		
 		var accButton = document.getElementById('acc');
 		accButton.addEventListener("touchstart", gasStart, true);
 		accButton.addEventListener("touchend", gasStop, true);
+		
+		var fireButton = document.getElementById('fireButton');
+		fireButton.addEventListener("touchstart", fire, true);
     };
