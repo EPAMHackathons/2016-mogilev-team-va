@@ -17,6 +17,11 @@
 
 <script>
 
+                
+
+                  
+                  navigator.vibrate(500);
+
 		var exampleSocket = new WebSocket("wss://racing-vnovikov.c9users.io/");
         var clientId;
         
@@ -35,7 +40,8 @@
                         nick: window.sessionStorage.nick,
                         color: 'red'
                     }
-                })); 
+                }));
+
             }
         }
 

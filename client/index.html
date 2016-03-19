@@ -1,15 +1,37 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+        <!--<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">-->
         <link rel="stylesheet" href="../style.css" type="text/css" />
+        <script src="https://code.jquery.com/jquery-2.2.2.js"></script>
+        <script src="js/gyro.js"></script>
+        <script src="js/client.js"></script>
     </head>
-    <body class="pilot-view">
-        <div>
-            <div class="accelerator">
-                <img id="accelerator-button" src="/images/fly.png"></img>
+    <body id="pilot-view" class="pilot-view">
+        <div class="controls">
+            <div id="status"></div>
+            <div id="acc" class="accelerator">
             </div>
-            <div></div>
-            <div class="fire"></div>
+            <div class="fire" onclick="fire()">
+            </div>
+            <div style="clear: both;"></div>
         </div>
+        
+        <script>
+        $( document ).ready(function() {
+            var body = document.documentElement;
+            if (body.requestFullscreen) {
+              body.requestFullscreen();
+            } else if (body.webkitrequestFullscreen) {
+              body.webkitrequestFullscreen();
+            } else if (body.mozrequestFullscreen) {
+              body.mozrequestFullscreen();
+            } else if (body.msrequestFullscreen) {
+              body.msrequestFullscreen();
+            }
+            console.log(body);
+        });
+        </script>
     </body>
 </html>

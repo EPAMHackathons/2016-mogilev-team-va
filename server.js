@@ -17,8 +17,8 @@ server.listen(8080, function() {
 });
 
 var servers = [];
-var lastClientId = 1;
 var clients = [];
+var lastClientId = 1;
  
 var wsServer = new WebSocketServer({
     httpServer: server,
@@ -42,7 +42,18 @@ function handleRequest(request) {
     }
 
     connection.on('message', handleMessage);
-    connection.on('close', handleClose);
+    connection.on('close', function (reasonCode, description) {
+        console.log((new Date()) + ' Peer ' + clientId + ' disconnected.');
+        for (var i=0; i < servers.length; i++) {
+            var eventData = {
+                type: 'disconnect',
+                data: {
+                    clientId: clientId
+                }
+            };
+            servers[i].sendUTF(JSON.stringify(eventData));
+        }
+    });
 }
 
 function handleConnection(connection, request) {
@@ -66,6 +77,16 @@ function handleMessage(message) {
         console.log('Received Message: ' + message.utf8Data);
 		for (var i=0; i < servers.length; i++) {
             servers[i].sendUTF(message.utf8Data);
+        }
+        
+        var messageData = JSON.parse(message.utf8Data);
+        if(messageData.type == 'hit' || messageData.type == 'killed') {
+            var client = _.find(clients, function(client) {
+                return client.id == messageData.data.clientId;
+            })
+            if(client) {
+                client.connection.sendUTF(message.utf8Data);
+            }
         }
     }
 }
