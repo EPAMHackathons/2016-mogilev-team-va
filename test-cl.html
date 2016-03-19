@@ -1,0 +1,107 @@
+<html>
+<head>
+<title>Hello</title>
+<script src="js/gyro.js"></script>
+
+</head>
+<body>
+	<div>
+	    <button onclick="gas()" style="width:160px;height:130px;">GAS</button>
+	    <button onclick="fire()" style="width:160px;height:130px;">FIRE</button>
+    </div>
+    <span id="clientId"></span>
+    <span id="movements"></span>
+    <p>gyro.getFeatures: <span id="features"></span></p>
+	<span id="example"></span>
+</body>
+
+<script>
+
+		var exampleSocket = new WebSocket("wss://racing-vnovikov.c9users.io/");
+        var clientId;
+        
+		exampleSocket.onmessage = function (event) {
+            var eventData = JSON.parse(event.data);
+            if(eventData.type == 'clientId') {
+                clientId = eventData.data.value;
+                var b = document.getElementById('clientId');
+                b.innerHTML = "<p>Client ID: " + clientId + " </p>";
+
+                exampleSocket.send(JSON.stringify({
+                    type: 'connect',
+                    data: {
+                        clientId: clientId,
+                        shipType: window.sessionStorage.shipType,
+                        nick: window.sessionStorage.nick,
+                        color: 'red'
+                    }
+                })); 
+            }
+        }
+
+		function fire(){
+		    var data = {
+		        type: 'fire',
+		        data: {
+		            clientId: clientId,
+		            value: true
+		        }
+		    }
+			exampleSocket.send(
+			    JSON.stringify(data)
+			); 
+		}
+		
+		function gas(){
+		    var data = {
+		        type: 'acc',
+		        data: {
+		            clientId: clientId,
+		            value: true
+		        }
+		    }
+			exampleSocket.send(
+			    JSON.stringify(data)
+			); 
+		}
+
+		gyro.frequency = 10;
+		var currentPosition = 0;
+		gyro.startTracking(function(o) {
+		var a = document.getElementById('movements');
+			var newPosition = o.beta/7 | 0;
+			if(newPosition == 0) {
+				a.innerHTML = "<p> going directly</p>";
+			} else if (newPosition > 0){
+				a.innerHTML = "<p> going to left " + newPosition + "</p>";
+			} else {
+				a.innerHTML = "<p> going to right " + newPosition + "</p>";
+			}
+
+			var b = document.getElementById('example'),
+					f = document.getElementById('features');
+			f.innerHTML = gyro.getFeatures();
+			b.innerHTML = "<p> x = " + o.x + "</p>" +
+										"<p> y = " + o.y + "</p>" +
+										"<p> z = " + o.z + "</p>" +
+										"<p> alpha = " + o.alpha + "</p>" +
+										"<p> beta = " + o.beta + "</p>" +
+										"<p> gamma = " + o.gamma + "</p>";
+			
+			if(currentPosition != newPosition) {
+			    exampleSocket.send(
+			        JSON.stringify({
+			            type: 'rotate',
+			            data: {
+			                clientId: clientId,
+			                value: newPosition
+			            }
+			        })
+			    );
+			    currentPosition = newPosition;
+			}
+
+		});
+
+	</script>
+</html>

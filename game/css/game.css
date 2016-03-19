@@ -1,0 +1,15 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+
+#viewContainer {
+    height: 1000px;
+    background-color: #333;
+}
+#gameContainer {
+    margin: 0 auto;
+    padding-top: 20px;
+    width: 90%;
+    height: 600px;
+}
