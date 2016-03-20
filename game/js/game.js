@@ -15,7 +15,7 @@ BasicGame.Game.prototype = {
     this.load.spritesheet('wing', '/game/assets/wing.png', 48, 48);
     this.load.spritesheet('tie', '/game/assets/tie.png', 48, 48);
     this.load.spritesheet('explosion', '/game/assets/explosion.png', 32, 32);
-    this.load.spritesheet('superFighter', '/game/assets/SuperFighter.png', 96, 128);
+    this.load.spritesheet('superFighter', '/game/assets/SuperFighter.png', 128, 96);
     
     this.load.audio('explosion', ['/game/audio/explosion.ogg']);
     this.load.audio('playerExplosion', ['/game/audio/player-explosion.ogg']);
@@ -288,6 +288,7 @@ BasicGame.Game.prototype = {
     ship.body.collideWorldBounds = true;
     
     ship.health = 10;
+    ship.damage = 1;
   },
   
   spawnBigShip: function() {
@@ -314,6 +315,11 @@ BasicGame.Game.prototype = {
     this.bigShip.reset(200, 200);
     this.bigShip.body.velocity.y = this.rnd.integerInRange(BasicGame.SUPER_SHIP_SPEED, BasicGame.SUPER_SHIP_SPEED);
     this.bigShip.body.velocity.x = this.rnd.integerInRange(BasicGame.SUPER_SHIP_SPEED, BasicGame.SUPER_SHIP_SPEED);
+    
+    this.bigShip.animations.add('ghost', [1, 0, 1, 0], 20, false);
+    
+    this.bigShip.health = 50;
+    console.log("this.bigShip.health " + this.bigShip.health);
   },
 
   update: function () {
@@ -376,10 +382,21 @@ BasicGame.Game.prototype = {
   },
   
   trackEffects: function(ship) {
-    if (ship.ghostUntil && ship.ghostUntil > this.time.now) {
-      return;
-    } else {
-      ship.animations.stop(null, false);
+    if (!_.isUndefined(ship)) {
+      if (ship.ghostUntil && ship.ghostUntil > this.time.now) {
+        return;
+      } else {
+        ship.animations.stop(null, false);
+      }
+    }
+    
+    if (!_.isUndefined(this.bigShip)) {
+      
+      if (this.bigShip.ghostUntil && this.bigShip.ghostUntil > this.time.now) {
+        return;
+      } else {
+        this.bigShip.animations.stop(null, false);
+      }
     }
   },
   
@@ -394,6 +411,10 @@ BasicGame.Game.prototype = {
     );
     
     this.physics.arcade.overlap(
+      this.redLasersPool, this.bigShip, this.bigShipHit, null, this
+    );
+    
+    this.physics.arcade.overlap(
       this.redLasersPool, this.tiesPool, this.playerHit, null, this
     );
     
@@ -403,10 +424,6 @@ BasicGame.Game.prototype = {
     
     this.physics.arcade.overlap(
       this.bigLasersPool, this.wingPool, this.playerHit, null, this
-    );
-    
-    this.physics.arcade.overlap(
-      this.redLasersPool, this.bigShip, this.bigShipHit, null, this
     );
     
     this.physics.arcade.overlap(
@@ -520,13 +537,15 @@ BasicGame.Game.prototype = {
     }
   },
   
-  bigShipHit: function(laser, bigShip) {
+  bigShipHit: function(bigShip, laser) {
     
-    this.bigShip.health = Number(this.bigShip.health) - Number(laser.damage);
+    laser.kill();
+    console.log("this.bigShip.health minus: " + Number(this.bigShip.health)  + " from laser " + Number(laser.damage));
+    this.bigShip.health = Number(this.bigShip.health) - 1; // !DOne
     if (this.bigShip.health > 0) {
 
       this.bigShip.ghostUntil = this.time.now + BasicGame.PLAYER_GHOST_TIME;
-      // bigShip.play('ghost');
+      this.bigShip.play('ghost');
     } else {
 
       this.explode(this.bigShip);
@@ -639,6 +658,7 @@ BasicGame.Game.prototype = {
       laser.rotation = ship.rotation;
       laser.reset(ship.x, ship.y);
       laser.clientId = ship.clientId;
+      laser.damage = ship.damage;
 
       // Shoot it in the right direction
       laser.body.velocity.x = Math.cos(laser.rotation) * BasicGame.BULLET_SPEED;
